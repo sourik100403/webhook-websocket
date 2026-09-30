@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>WebSocket Learning</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 50px auto;
+        }
+
+        input {
+            padding: 10px;
+            width: 400px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+        }
+
+        #messages {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<h1>WebSocket Learning</h1>
+
+<button onclick="connect()">
+    Connect
+</button>
+
+<br><br>
+
+<input
+        id="message"
+        placeholder="Enter message"
+/>
+
+<button onclick="sendMessage()">
+    Send
+</button>
+
+<h2>Messages</h2>
+
+<div id="messages"></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+
+
+<script>
+
+    let stompClient = null;
+
+
+function connect() {
+
+    const socket = new SockJS('/ws');
+
+    stompClient = StompJs.Stomp.over(socket);
+
+    stompClient.connect({}, function () {
+
+        console.log("Connected to WebSocket");
+
+        stompClient.subscribe(
+            '/topic/orders',
+            function (message) {
+
+                const data =
+                    JSON.parse(message.body);
+
+                const messages =
+                    document.getElementById("messages");
+
+                messages.innerHTML +=
+                    "<p>" +
+                    "🔔 Order Created: " +
+                    data.orderId +
+                    " | " +
+                    data.product +
+                    " | Quantity: " +
+                    data.quantity +
+                    "</p>";
+            }
+        );
+
+    });
+}
+
+    function sendMessage() {
+
+        const message =
+            document.getElementById("message").value;
+
+        stompClient.send(
+            "/app/hello",
+            {},
+            message
+        );
+
+    }
+
+</script>
+
+</body>
+
+</html>
